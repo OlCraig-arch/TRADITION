@@ -255,7 +255,11 @@ PCAvalues
 PCAloadings <- data.frame(Variables = rownames(PCA$rotation), PCA$rotation)
 # Visuqlise the PCA
 p <- ggplot() +
+<<<<<<< HEAD
   geom_point(data=PCAvalues, aes(x = PC1, y = PC2, fill= group), pch=21, colour='black', size=2) +
+=======
+  geom_point(data=PCAvalues, aes(x = PC1, y = PC2, color = group, size=1)) +
+>>>>>>> 7466bbf90bbd4a7b8ee49360add5292a562625b6
   geom_segment(data = PCAloadings, aes(x = 0, y = 0, xend = (PC1*10),
      yend = (PC2*10)), arrow = arrow(length = unit(1/2, "picas")),
      color = "black") + 
@@ -263,7 +267,11 @@ p <- ggplot() +
      label = PCAloadings$Variables, )+
 xlim(5,-5)+
  ylim(5,-5)+
+<<<<<<< HEAD
   theme_Pub ()+
+=======
+  #theme_Pub ()+
+>>>>>>> 7466bbf90bbd4a7b8ee49360add5292a562625b6
   coord_fixed (ratio = 1)
 p
 ```
@@ -272,6 +280,391 @@ p
 
 #Conduct LDA analysis
 
+<<<<<<< HEAD
+=======
+---
+title: Compound specific isotope analsyis of human and faunal samples from Denamrk
+  sites
+author: "OEC"
+date: "26/04/2023"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+Load packages
+
+```{r, echo=FALSE}
+library(dplyr)
+library(ggplot2)
+library(data.table)
+library(tidyr)
+library(stringr)
+library(Hmisc)
+library(ggpubr)
+library(googlesheets4)
+
+# Load colour palette with grey:
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
+```
+
+
+
+#1 Load data from googlesheet 
+
+```{r}
+# Read data from INTERNET
+library('googlesheets4')
+ #gs4_deauth() # if needed
+ gs4_auth(email='oliver.craig@york.ac.uk') # only if needed
+data <-read_sheet("https://docs.google.com/spreadsheets/d/1TloKBguOGJ6akvWmUg9JCZ4Vife_RNkY_0NOd-EQUEg/edit#gid=812854588", sheet="Data") |> as.data.frame()
+#subset data
+library(dplyr)
+fauna <- data %>% dplyr::filter (group == "Fauna")
+humans <- data %>% dplyr::filter (group == "Human")
+all_data <- data %>% dplyr::filter (Country == "Denmark")
+
+```
+```{r}
+
+#cols <- c("Jabuticabeira II" = "#56B4E9", "Moraes" = "#009E73", "Piaçaguera" = "#E69F00", "terrestrial_fauna" = "#CC79A7", "marine_fauna" = "#0072B2")
+
+#cols1 <- c("Jabuticabeira II" = "#56B4E9", "Moraes" = "#009E73", "Piaçaguera" = "#E69F00", "Freshwater" = "#999999", "Marine" = "#0072B2", "C3 Fauna" = "#F0E442", "C3 Humans" = "#D55E00", "C4_humans" = "#CC79A7") 
+           
+#order <- c("Jabuticabeira II", "Moraes", "Piaçaguera", "terrestrial_fauna", "marine_fauna")
+
+#order1 <- c("Jabuticabeira II", "Moraes", "Piaçaguera", "Freshwater", "Marine", "C3 Fauna", "C3 Humans", "C4_humans") 
+
+```
+
+
+
+#2 Plot the bulk isotope data by species and site. 
+
+```{r}
+#Creates a template for collagen15N against collagen13C
+p <-ggplot()+
+  labs(y=expression(delta^{15}*N[collagen]*"(\u2030)"), x=expression(delta^{13}*C[collagen]*"(\u2030)"))+
+  scale_x_continuous(position="bottom", limits=c(-25,-8))+
+  scale_y_continuous(position = "left",limits=c(5,20))+
+  geom_point(data=humans, aes(y=d15N, x=d13C, fill=Culture), colour="black", pch=23, size=3) +
+  geom_point(data=fauna, aes(y=d15N, x=d13C, fill=category), colour="black", pch=21, size=3) +
+  #scale_fill_manual(values=c(cols), breaks=c(order))+
+  theme(legend.title=element_text(size=10))+
+  guides(fill=guide_legend(title="Samples"))+
+  theme_bw()+
+  coord_fixed(ratio = 1)
+p
+
+
+
+```
+
+#3. Quality control check the CSIA data by plotting Pro against Hyp va Pro for each isotope. 
+
+```{r}
+#QC3 Plot 15NPro against 15NHypro 
+p <- ggplot(data=data, aes(y=hyp_d15N, x=pro_d15N, fill=Batch))+ 
+  labs(x=expression(delta^{15}*N[Pro]*"(\u2030)"), y=expression(delta^{15}*N[Hyp]*"(\u2030)"))+
+  scale_x_continuous(position="bottom", limits=c(5,25))+
+  scale_y_continuous(position = "left",limits=c(5,25))+
+  geom_point(colour="black", pch=21, size=3.5)+
+  #geom_smooth(method=lm, se=FALSE)+
+  geom_abline(intercept=c(0), slope= 1, linetype="solid")+
+  theme_bw()+
+  coord_fixed(ratio = 1)
+p
+
+#QC4 Plot 13CPro against 13CHypr
+p <- ggplot(data=data, aes(y=hyp_d13C, x=pro_d13C, fill=Batch))+ 
+  labs(x=expression(delta^{13}*C[Pro]*"(\u2030)"), y=expression(delta^{13}*C[Hyp]*"(\u2030)"))+
+  scale_x_continuous(position="bottom", limits=c(-30,-10))+
+  scale_y_continuous(position = "left",limits=c(-30,-10))+
+  geom_point(colour="black", pch=21, size=3.5)+
+  #geom_smooth(method=lm, se=FALSE)+
+  geom_abline(intercept=c(0), slope= 1, linetype="solid")+
+  theme_bw()+
+  coord_fixed(ratio = 1)
+p
+```
+
+#4. Check quality contol through estimated mass balance against observed bulk values.
+
+```{r}
+#QC1 d15N mass balance
+p <- ggplot(data=data, aes(y=d15N_est, x=d15N, fill=common_name))+ 
+  labs(x=expression(delta^{15}*N[OBS]*"(\u2030)"), y=expression(delta^{15}*N[EST]*"(\u2030)"))+
+  scale_x_continuous(position="bottom", limits=c(5,25))+
+  scale_y_continuous(position = "left",limits=c(5,25))+
+  geom_point(colour="black", pch=21, size=3.5)+
+  geom_abline(intercept=c(0), slope= 1, linetype="solid")+
+  theme_bw()+
+  coord_fixed(ratio = 1)
+p
+
+#QC2 d13C mass balance
+p <- ggplot(data=data, aes(y=d13C_est, x=d13C, fill=common_name))+ 
+  labs(x=expression(delta^{13}*C[OBS]*"(\u2030)"), y=expression(delta^{13}*C[EST]*"(\u2030)"))+
+  scale_x_continuous(position="bottom", limits=c(-25,-5))+
+  scale_y_continuous(position = "left",limits=c(-25,-5))+
+  geom_point(colour="black", pch=21, size=3.5)+
+  geom_abline(intercept=c(0), slope= 1, linetype="solid")+
+  theme_bw()+
+  coord_fixed(ratio = 1)
+p
+```
+Compare d13C stdev against error
+
+```{r}
+p <- ggplot(data=data, aes(y=nle_d13C_err, x=nle_d13Cstdev, fill= Batch)) + 
+  labs(x=expression(delta^{13}*C[stdev]*"(\u2030)"), y=expression(delta^{13}*C[error]*"(\u2030)"))+
+  scale_x_continuous(position="bottom", limits=c(-1,1))+
+  scale_y_continuous(position = "left",limits=c(-1,1))+
+  geom_point(colour="black", pch=21, size=3.5)+
+  theme_bw()+
+  guides(color=FALSE, shape=FALSE)+
+  coord_fixed(ratio = 1)
+p
+```
+
+
+
+#5. Plot d15N Glu against d15N Phe
+
+```{r}
+  p <-ggplot() +
+  labs(x=expression(delta^{15}*N[Phe]*"(\u2030)"), y=expression(delta^{15}*N[Glu]*"(\u2030)"))+
+  scale_x_continuous(position="bottom", limits=c(0,20))+
+  scale_y_continuous(position = "left",limits=c(0,40))+
+  geom_point(data=human, aes(y=glu_d15N, x=phe_d15N, fill= Culture), colour="black", pch=23, size=3)+
+  geom_point(data=fauna, aes(y=glu_d15N, x=phe_d15N, fill = category),  colour ="black", pch=21, size=3.5)+
+  theme_bw()+
+  annotate("text", label = "T1", x = 7 , y = 0, size = 3, colour = "black",angle = 25)+
+  annotate("text", label = "T2", x = 0 , y = 1.8, size = 3, colour = "black",angle = 25)+
+  annotate("text", label = "T3", x = 0 , y = 8, size = 3, colour = "black",angle = 25)+
+  annotate("text", label = "M2", x = 0 , y = 10.7, size = 3, colour = "Blue",angle = 25)+
+  annotate("text", label = "M3", x = 0 , y = 17.6, size = 3, colour = "Blue",angle = 25)+
+  annotate("text", label = "M4", x = 0 , y = 24.0, size = 3, colour = "Blue",angle = 25)+
+  #scale_fill_manual(values=c(cols), breaks=c(order))+
+  theme(legend.title=element_text(size=10))+
+  guides(fill=guide_legend(title="Samples"))+
+  geom_abline(intercept=c(-8.4,-0.8, 6.8, 9.5, 16.1, 22.7), slope= 1, linetype="dashed")
+p
+```
+
+Looks ok - plot d15N Glu against d15N Phe. Let's see the relationship between Glu-Phe and d13C. 
+
+```{r}
+#Fig 1d Collagen13C against Glu-Phe
+p <-ggplot() +
+  geom_point(data=human, aes(y=gluphe_d15N, x=d13C, fill = Culture),  colour="black", pch=21, size=3.5)+
+  geom_point(data=fauna, aes(y=gluphe_d15N, x=d13C, fill=category), colour="black", pch=23, size=3)+
+  labs(y=expression(Delta^{15}*N[Glu-Phe]*"(\u2030)"), x=expression(delta^{13}*C[collagen]*"(\u2030)"))+
+  scale_x_continuous(position="top", limits=c(-25,-5))+
+  scale_y_continuous(position = "right",limits=c(-5,25))+
+  theme_bw()+
+   coord_fixed(ratio = 0.5)
+p
+```
+
+
+
+
+
+```{r}
+#Fig 1c bis Coll 15N against Glu/Phe
+p <-ggplot() +
+  geom_point(data=human, aes(y=gluphe_d15N, x=d15N, fill=Culture), colour="black", pch=23, size=3)+
+  geom_point(data=fauna, aes(y=gluphe_d15N,, x=d15N, fill = category), colour="black", pch=21, size=3.5)+
+  labs(x=expression(delta^{15}*N[collagen]*"(\u2030)"), y=expression(Delta^{15}*N[Glu-Phe]*"(\u2030)"))+
+  scale_x_continuous(position="top", limits=c(0,20))+
+  scale_y_continuous(position = "right",limits=c(-5,25))+
+  #scale_fill_manual(values=c(cols), breaks=c(order))+
+  theme_bw()
+  coord_fixed(ratio = 0.5)
+p
+```
+
+
+
+```{r}
+#Val vs Phe d13C
+p <- ggplot()+
+  labs(x=expression(delta^{13}*C[Val]*"(\u2030)"), y=expression(delta^{13}*C[Phe]*"(\u2030)"))+
+  scale_x_continuous(position="bottom", limits=c(-40,-10))+
+  scale_y_continuous(position = "left",limits=c(-40, -10))+
+  geom_point(data=human, aes(y=phe_d13C, x=val_d13C, fill = Culture), colour="black", pch=21, size=3.5)+
+  geom_point(data=fauna, aes(y=phe_d13C, x=val_d13C,fill=category), colour="black", pch=23, size=3)+
+  geom_abline(intercept=c(0), slope= 1, linetype="dashed")+
+   #scale_fill_manual(values=c(cols1), breaks=c(order1))+
+  theme_bw()+
+  coord_fixed(ratio = 1)
+p
+
+```
+
+
+
+
+```{r}
+p <- ggplot()+
+  labs(x=expression(Delta^{13}*C[Lys-Phe]*"(\u2030)"), y=expression(Delta^{13}*C[Val-Phe]*"(\u2030)"))+
+  scale_x_continuous(position="bottom", limits=c(-2,15))+
+  scale_y_continuous(position = "left",limits=c(-2, 15))+
+  geom_point(data=human, aes(y=valphe_d13C, x=lysphe_d13C, fill = Culture), colour="black", pch=21, size=3.5)+
+  geom_point(data=fauna, aes(y=valphe_d13C, x=lysphe_d13C,fill=category), colour="black", pch=23, size=3)+
+  geom_abline(intercept=c(0), slope= 1, linetype="dashed")+
+   #scale_fill_manual(values=c(cols1), breaks=c(order1))+
+  theme_bw()+
+  coord_fixed(ratio = 1)+
+  theme(legend.title=element_text(size=10))+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+p
+```
+
+
+```{r}
+#Gly vs Phe d13C
+p <- ggplot()+
+  labs(x=expression(Delta^{13}*C[Val-Phe]*"(\u2030)"), y=expression(Delta^{15}*N[Glx-Phe]*"(\u2030)"))+
+  scale_x_continuous(position="bottom", limits=c(-5,10))+
+  scale_y_continuous(position = "left",limits=c(-5, 20))+
+  geom_point(data=human, aes(y=gluphe_d15N, x=valphe_d13C, fill = Culture), colour="black", pch=21, size=3.5)+
+  geom_point(data=fauna, aes(y=gluphe_d15N, x=valphe_d13C, fill=category), colour="black", pch=23, size=3)+
+  #geom_abline(intercept=c(0), slope= 1, linetype="dashed")+
+   #scale_fill_manual(values=c(cols1), breaks=c(order1))+
+  theme_bw()+
+  coord_fixed(ratio = 0.5)+
+  theme(legend.title=element_text(size=10))+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+p
+```
+
+
+
+7# d13C fingerprinting
+
+```{r}
+# Install packages
+library(googlesheets4)
+library(ggplot2)
+library (devtools)
+library(tidyverse)
+library(dplyr)
+
+```
+
+```{r}
+# Load colour palette with grey:
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
+```
+#PCA analysis of primary producers
+
+#8. Load the reference data from Larsen
+
+```{r}
+gs4_deauth()
+#Load Larsen on d13C values for reference
+Larsen <<- read_sheet(ss = "https://docs.google.com/spreadsheets/d/19YG0RAg8fuNAKWujooXnLnv6iNRheXXoKT331Klac-I/edit#gid=1182477512", sheet="Larsen")
+#Subset primary producters
+Larsen_pp <- filter(Larsen, PP == "Y")
+#Select groups and amino acids
+Larsen_pp <- Larsen_pp %>%  dplyr::select(Group, ala_d13C, asx_d13C, glx_d13C, gly_d13C, ile_d13C, thr_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C, tyr_d13C)
+Larsen_pp <- na.omit(Larsen_pp) #remove N/As
+```
+#9. Select just amino acids for PCA
+```{r}
+
+all_AA <- Larsen_pp %>%  dplyr::select(ala_d13C, asx_d13C, glx_d13C, gly_d13C, ile_d13C, thr_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C, tyr_d13C)
+PCA <- prcomp(all_AA, scale. = TRUE)
+# Extract PC axes for plotting
+PCAvalues <- data.frame(group = Larsen_pp$Group, PCA$x)
+# Extract loadings of the variables
+PCAloadings <- data.frame(Variables = rownames(PCA$rotation), PCA$rotation)
+# Plot PC1 vs PC2
+p <- ggplot (data=PCAvalues, aes(x = PC1, y = PC2, colour = group)) +
+  geom_point(size=3) +
+  geom_segment(data = PCAloadings, aes(x = 0, y = 0, xend = (PC1*10),
+     yend = (PC2*10)), arrow = arrow(length = unit(1/2, "picas")),
+     color = "black") +
+  annotate ("text", x = (PCAloadings$PC1*11), y = (PCAloadings$PC2*11),
+     label = PCAloadings$Variables, )+
+xlim(5,-5)+
+ ylim(5,-5)+
+  coord_fixed (ratio = 1)
+p
+```
+10. Normalise the AA d13C values 
+```{r}
+#Calculate the AAn values which equals each values variance from the mean and repeat the analysis.
+
+#First organise the data and normalise to row mean.
+Larsen_pp <- filter(Larsen, PP == "Y")
+Larsen_pp <- Larsen_pp %>%  dplyr::select(Group, ala_d13C, asx_d13C, glx_d13C, gly_d13C, ile_d13C, thr_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C, tyr_d13C)
+Larsen_pp <- na.omit(Larsen_pp) #
+#Create a new coloumn containing the row mean of the key amino acid for each row. .
+Larsen_pp <- Larsen_pp %>% rowwise() %>% mutate(row_mean = mean(c(ala_d13C, asx_d13C, glx_d13C, gly_d13C, ile_d13C, thr_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C, tyr_d13C)))#
+#Subtract the row mean from each of the row values to normalize
+Larsen_pp_n <-Larsen_pp %>% rowwise() %>%
+  mutate(across(c(ala_d13C, asx_d13C, glx_d13C, gly_d13C, ile_d13C, thr_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C, tyr_d13C), ~ .x - row_mean))
+
+```
+#10. Then perform the PCA and visualise the results. This creates Figure 1 in Larsen et al.
+```{r}
+
+#extract the amino acid values
+all_AA <- Larsen_pp_n %>%  dplyr::select(ala_d13C, asx_d13C, glx_d13C, gly_d13C, ile_d13C, thr_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C, tyr_d13C)
+PCA <- prcomp(all_AA, scale. = TRUE)
+# Extract PC axes for plotting
+PCAvalues <- data.frame(group = Larsen_pp_n$Group, PCA$x)
+# Extract loadings of the variables
+PCAloadings <- data.frame(Variables = rownames(PCA$rotation), PCA$rotation)
+# Visuqlise the PCA
+p <- ggplot (data=PCAvalues, aes(x = PC1, y = PC2, colour = group)) +
+  geom_point(size=3) +
+  geom_segment(data = PCAloadings, aes(x = 0, y = 0, xend = (PC1*10),
+     yend = (PC2*10)), arrow = arrow(length = unit(1/2, "picas")),
+     color = "black") +
+  annotate ("text", x = (PCAloadings$PC1*11), y = (PCAloadings$PC2*11),
+     label = PCAloadings$Variables, )+
+xlim(5,-5)+
+ ylim(5,-5)+
+  coord_fixed (ratio = 1)
+p
+```
+#11. Repeat PCA just for source aminios
+```{r}
+
+Larsen_ppS <- filter(Larsen, PP == "Y")
+Larsen_ppS <- Larsen_pp %>%  dplyr::select(Group, ile_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C)
+Larsen_ppS <- na.omit(Larsen_pp) #
+#Create a new coloumn containing the row mean of the key amino acid for each row. .
+Larsen_ppS <- Larsen_ppS %>% rowwise() %>% mutate(row_mean = mean(c(ile_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C)))#
+#Subtract the row mean from each of the row values to normalize
+Larsen_pp_Sn <-Larsen_pp %>% rowwise() %>%
+  mutate(across(c(ile_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C), ~ .x - row_mean))
+#Conduct the PCA
+all_AA <- Larsen_pp_Sn %>%  dplyr::select(ile_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C)
+PCA1 <- prcomp(all_AA, scale. = TRUE)
+# Extract PC axes for plotting
+PCAvalues1 <- data.frame(group = Larsen_pp_Sn$Group, PCA1$x)
+# Extract loadings of the variables
+PCAloadings1 <- data.frame(Variables = rownames(PCA1$rotation), PCA1$rotation)
+# Visuqlise the PCA
+p <- ggplot (data=PCAvalues1, aes(x = PC1, y = PC2, colour = group)) +
+  geom_point(size=3) +
+  geom_segment(data = PCAloadings1, aes(x = 0, y = 0, xend = (PC1*10),
+     yend = (PC2*10)), arrow = arrow(length = unit(1/2, "picas")),
+     color = "black") +
+  annotate ("text", x = (PCAloadings1$PC1*11), y = (PCAloadings1$PC2*11),
+     label = PCAloadings1$Variables, )+
+xlim(10,-10)+
+ ylim(10,-10)+
+  coord_fixed (ratio = 1)
+p
+```
+#12. LDA analaysis
+>>>>>>> 7466bbf90bbd4a7b8ee49360add5292a562625b6
 
 Prepare Larsen data for LDA analysis
 ```{r}
@@ -288,8 +681,13 @@ Larsen_pp <- Larsen_pp %>%  dplyr::select(Group, ile_d13C, leu_d13C, lys_d13C, v
 Larsen_pp <- na.omit(Larsen_pp)
 Larsen_pp$Group  <-as.factor (Larsen_pp$Group)
 #omit Fungi
+<<<<<<< HEAD
 Larsen_pp <-Larsen_pp %>% filter(Group!="Fungi")
 #Larsen_pp <-Larsen_pp %>% filter(Group!="Seagrasses")
+=======
+#Larsen_pp <-Larsen_pp %>% filter(Group!="Fungi")
+
+>>>>>>> 7466bbf90bbd4a7b8ee49360add5292a562625b6
 ```
 
 
@@ -309,10 +707,16 @@ Partition the data and create train and test sets
 ```{r}
 ind <- sample(2, nrow(Larsen_pp_n),
               replace = TRUE,
+<<<<<<< HEAD
               prob = c(0.8, 0.2))
 train.data <- Larsen_pp_n[ind==1,]
 test.data <- Larsen_pp_n[ind==2,]
 train.data
+=======
+              prob = c(0.9, 0.1))
+train.data <- Larsen_pp_n[ind==1,]
+test.data <- Larsen_pp_n[ind==2,]
+>>>>>>> 7466bbf90bbd4a7b8ee49360add5292a562625b6
 ```
 
 Create LDA model
@@ -321,6 +725,7 @@ library(MASS)
 # Fit LDA model to the training data
 lda_model <- lda(Group ~ ., data = train.data)
 ```
+<<<<<<< HEAD
 
 ```{r}
 # Calculate the percentage of variance explained by each linear discriminant
@@ -329,6 +734,8 @@ ld1_label <- paste0("Linear Discriminant 1 (", round(percent_variance_explained[
 ld2_label <- paste0("Linear Discriminant 2 (", round(percent_variance_explained[2], 2), "%)")
 ```
 
+=======
+>>>>>>> 7466bbf90bbd4a7b8ee49360add5292a562625b6
 Evaluate the LDA  performance
 ```{r}
 # Predict on the test data using the LDA model
@@ -340,22 +747,33 @@ print(confusion_matrix)
 ```
 
 Call arcaheological data and normalise
+<<<<<<< HEAD
 
 
 ```{r}
 data <- read_sheet(ss = "https://docs.google.com/spreadsheets/d/19YG0RAg8fuNAKWujooXnLnv6iNRheXXoKT331Klac-I/edit#gid=1182477512", sheet="Sambaquis_CSIA_AA_clean")|> as.data.frame()
 data <- data %>%  dplyr::select(Group, group, category, Site, Sample_ID, ile_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C)
+=======
+```{r}
+data <- all_data %>%  dplyr::select(category, Culture, ile_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C)
+>>>>>>> 7466bbf90bbd4a7b8ee49360add5292a562625b6
 data <- data %>% dplyr::rowwise() %>% dplyr::mutate(row_mean = mean(c(ile_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C)))
 
 #Subtract the row mean from each of the row values to normalize
 data <- data %>% dplyr::rowwise() %>% dplyr::mutate(across(c( ile_d13C, leu_d13C,  lys_d13C, val_d13C, phe_d13C), ~ .x - row_mean))
+<<<<<<< HEAD
 data_n <- data %>%  dplyr::select(Group, group, category, Sample_ID,  Site, ile_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C)#drop means 
+=======
+data_n <- data %>%  dplyr::select(category, Culture, ile_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C)#drop means 
+data_n <- data_n %>% rename(Group=category) 
+>>>>>>> 7466bbf90bbd4a7b8ee49360add5292a562625b6
 data_n$Group <-as.factor (data_n$Group)
 print (data_n)
 ```
 
 ```{r}
 # Predict the classes for the unknown samples using the LDA model
+<<<<<<< HEAD
 lda_Sambaqui_predictions <- predict(lda_model, newdata = data_n)
 #Print the predicted classes for the unknown samples
 predicted_Sambaqui_classes <- lda_Sambaqui_predictions$class
@@ -372,6 +790,18 @@ Fauna_LDA <- Samples %>% dplyr::filter (Group1 == "Fauna")
 Human_LDA <- Samples %>%filter(Group1 == "Human")
 Human_LDA
 
+=======
+lda_Danish_predictions <- predict(lda_model, newdata = data_n)
+#Print the predicted classes for the unknown samples
+predicted_Danish_classes <- lda_Danish_predictions$class
+#print (predicted_Danish_classes)
+```
+Create two dataframes for plotting and combine
+
+```{r}
+Refs <- data.frame(LD1 = predict(lda_model, newdata = train.data)$x[, 1], LD2 = predict(lda_model, data = train.data)$x[, 2], Type = "Training", group = as.factor(train.data$Group))
+Samples <- data.frame (LD1 = lda_Danish_predictions$x[, 1], LD2 = lda_Danish_predictions$x[, 2], Type = "Samples", group = data_n$Group, culutre = data_n$Culture)
+>>>>>>> 7466bbf90bbd4a7b8ee49360add5292a562625b6
 #Combined <- rbind (Refs, Samples)
 #print (Combined)
 ```
@@ -396,6 +826,7 @@ p <- ggplot() +
   stat_ellipse(geom= "polygon", data=Refs, alpha=0.1,
                aes (x = LD1, y = LD2, group = group),
               level = 0.68)+
+<<<<<<< HEAD
   geom_point(data=Human_LDA, aes(x =LD1, y =LD2, fill = Site), pch=23, colour = "black", size = 3) +
   geom_point(data=Fauna_LDA, aes(x =LD1, y =LD2, fill = category), pch=21, colour = "black", size = 3) +
    scale_fill_manual(values=c(cols), breaks=c(order))+
@@ -405,10 +836,17 @@ p <- ggplot() +
  #ylim(-3,3)+
   theme_Pub()
   #coord_fixed(ratio = 1)
+=======
+  geom_point(data=Samples, aes(x =LD1, y =LD2, fill = group), pch=21, colour = "black", size = 3) +
+  geom_text(data=means, aes(y=LD2, x=LD1,label=group), hjust=0, size=4, color="black")+
+  labs(title = "LDA Plot", x = "Linear Discriminant 1", y = "Linear Discriminant 2", fill = "Group", shape = "Type") +
+  theme_bw()
+>>>>>>> 7466bbf90bbd4a7b8ee49360add5292a562625b6
 p
 ```
 
 
+<<<<<<< HEAD
 Plot LD2 against sulfur isotopes for Piacaguera
 ```{r}
 Piacaguera_LDA  <- Samples %>%filter(Site == "Piaçaguera") %>%filter(category == "human")
@@ -434,12 +872,117 @@ p <- ggplot() +
   #coord_fixed(ratio = 1)
 p
 ```
+=======
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+library(tidyverse)
+library(caret)
+```
+#Create a normalised test data set from Larsen
+
+```{r}
+
+```
+Creat a normalised training set from Larsen's primary producters
+```{r}
+Larsen <<- read_sheet(ss = "https://docs.google.com/spreadsheets/d/19YG0RAg8fuNAKWujooXnLnv6iNRheXXoKT331Klac-I/edit#gid=1182477512", sheet="Larsen")
+#Subset non primary producers
+Larsen_pp <- filter(Larsen, PP == "Y")
+#Select groups and amino acids
+Larsen_pp <- Larsen_pp %>%  dplyr::select(Group, ile_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C)
+Larsen_pp <- na.omit(Larsen_pp) #
+#Create a new coloumn containing the row mean of the key amino acid for each row. . 
+Larsen_pp <- Larsen_pp %>% dplyr::rowwise() %>% dplyr::mutate(row_mean = mean(c(ile_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C)))
+#Subtract the row mean from each of the row values to normalize
+Larsen_pp_n <-Larsen_pp %>% dplyr::rowwise() %>% dplyr::mutate(across(c( ile_d13C, leu_d13C,  lys_d13C, val_d13C, phe_d13C), ~ .x - row_mean))
+Larsen_pp_n
+```
+Creat a test set from TRADITION data
+
+```{r}
+data <- data %>%  select(Group, ile_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C)
+data <- na.omit(data) #
+#Create a new coloumn containing the row mean of the key amino acid for each row. . 
+data <- data%>% rowwise() %>% mutate(row_mean = mean(c(ile_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C)))#
+#Subtract the row mean from each of the row values to normalize
+data_n <-data %>% rowwise() %>% 
+  mutate(across(c(ile_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C), ~ .x - row_mean))
+data_n
+>>>>>>> 7466bbf90bbd4a7b8ee49360add5292a562625b6
 ```
 
 
 
 
+<<<<<<< HEAD
 
 
 
+=======
+```{r}
+
+# Create 2 dataframes for comparison
+train.data <-  Larsen_pp_n %>%  dplyr::select(Group,  ile_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C)
+
+test.data <- data_n %>%  dplyr::select(Group,  ile_d13C, leu_d13C, lys_d13C, val_d13C, phe_d13C)
+```
+
+```{r}
+
+# Estimate preprocessing parameters
+preproc.param <- train.data %>% 
+  preProcess(method = c("center", "scale"))
+# Transform the data using the estimated parameters
+train.transformed <- preproc.param %>% predict(train.data)
+test.transformed <- preproc.param %>% predict(test.data)
+test.transformed
+```
+
+LDA determines group means and computes, for each individual, the probability of belonging to the different groups. The individual is then affected to the group with the highest probability score.
+
+```{r}
+library(MASS)
+# Fit the model
+model <- lda(Group~., data = train.transformed)
+# Make predictions
+predictions <- predict(model,test.transformed)
+# Model accuracy
+mean(predictions$class==test.transformed$Group)
+model <- lda(Group~., data = train.transformed)
+model
+plot(model)
+```
+
+Make predictions
+
+```{r}
+predictions <- model %>% predict(test.transformed)
+names(predictions)
+# Predicted classes
+head(predictions$class, 6)
+# Predicted probabilities of class memebership.
+head(predictions$posterior, 6) 
+# Linear discriminants
+head(predictions$x, 3) 
+```
+Plot results
+```{r}
+lda.data <- cbind(train.transformed, predict(model)$x)
+ggplot(lda.data, aes(LD1, LD2)) +
+  geom_point(aes(color = Group))
+mean(predictions$class==test.transformed$Group)
+lda.data
+```
+>>>>>>> 7466bbf90bbd4a7b8ee49360add5292a562625b6
 
