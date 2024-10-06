@@ -8,7 +8,7 @@ output:
   html_document: default
   pdf_document: default
 ---
-Load packages
+#1Load packages and colour pallette
 
 ```{r, echo=FALSE}
 library(dplyr)
@@ -24,36 +24,67 @@ library(googlesheets4)
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
 ```
 
-
-
-Load data from googlesheet https://docs.google.com/spreadsheets/d/19YG0RAg8fuNAKWujooXnLnv6iNRheXXoKT331Klac-I/edit#gid=1182477512
+#2Create a theme for data visualiation
 
 ```{r}
-googlesheets4::gs4_deauth()
-googlesheets4::gs4_auth()
+theme_Pub <- function(base_size=10, base_family="arial") {
+      library(grid)
+      library(ggthemes)
+      (theme_foundation(base_size=base_size, base_family=base_family)
+       + theme(plot.title = element_text(face = "bold",
+                                         size = rel(1.2), hjust = 0.5),
+               text = element_text(),
+               panel.background = element_rect(colour = NA),
+               plot.background = element_rect(colour = NA),
+               panel.border = element_rect(colour = NA),
+               axis.title = element_text(face = "bold",size = rel(1)),
+               axis.title.y = element_text(angle=90,vjust =2),
+               axis.title.x = element_text(vjust = -0.2),
+               axis.text = element_text(),
+               axis.line = element_line(colour="black"),
+               axis.ticks = element_line(),
+               panel.grid.major = element_line(colour="#f0f0f0"),
+               panel.grid.minor = element_blank(),
+               legend.key = element_rect(colour = NA),
+               legend.position = "right",
+               legend.direction = "vertical",
+               legend.key.size= unit(0.5, "cm"),
+               legend.spacing = unit(0, "cm"),
+               legend.title = element_text(NULL),
+               plot.margin=unit(c(10,5,5,5),"mm"),
+               strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+               strip.text = element_text(face="bold")
+       )) 
+  }
+```
+
+#3 Load data from googlesheet https://docs.google.com/spreadsheets/d/19YG0RAg8fuNAKWujooXnLnv6iNRheXXoKT331Klac-I/edit#gid=1182477512
+
+```{r}
+#googlesheets4::gs4_deauth()
+#googlesheets4::gs4_auth()
 data <- read_sheet(ss = "https://docs.google.com/spreadsheets/d/19YG0RAg8fuNAKWujooXnLnv6iNRheXXoKT331Klac-I/edit#gid=1182477512", sheet="Sambaquis_CSIA_AA_clean")
 humans <-filter(data, group == "Human")
 fauna <-filter(data, group == "Fauna")
-Piacaguera <-filter(humans, Site == "Piaçaguera")
 control <<- read_sheet(ss = "https://docs.google.com/spreadsheets/d/19YG0RAg8fuNAKWujooXnLnv6iNRheXXoKT331Klac-I/edit#gid=1182477512", sheet="d13C_control groups")
 
 ```
 
-Create a colour pallette
+#4. Create a colour pallette
 ```{r}
-cols <- c("Jabuticabeira II" = "#56B4E9", "Moraes" = "#009E73", "Piaçaguera" = "#E69F00", "terrestrial_fauna" = "#CC79A7", "marine_fauna" = "#0072B2")
+cols <- c("Jabuticabeira II" = "#56B4E9", "Moraes" = "#009E73", "Piaçaguera" = "#E69F00", "Morro do Ouro" = "#F0E442", "terrestrial_fauna" = "#CC79A7", "marine_fauna" = "#0072B2")
 
-cols1 <- c("Jabuticabeira II" = "#56B4E9", "Moraes" = "#009E73", "Piaçaguera" = "#E69F00", "Freshwater" = "#999999", "Marine" = "#0072B2", "C3 Fauna" = "#F0E442", "C3 Humans" = "#D55E00", "C4_humans" = "#CC79A7") 
+cols1 <- c("Jabuticabeira II" = "#56B4E9", "Moraes" = "#009E73", "Piaçaguera" = "#E69F00", "Morro do Ouro" = "#F0E442", "Freshwater" = "#999999", "Marine" = "#0072B2", "C3 Fauna" = "#000000", "C3 Humans" = "#D55E00", "C4_humans" = "#CC79A7") 
            
-order <- c("Jabuticabeira II", "Moraes", "Piaçaguera", "terrestrial_fauna", "marine_fauna")
+order <- c("Jabuticabeira II", "Moraes", "Piaçaguera", "Morro do Ouro", "terrestrial_fauna", "marine_fauna")
 
-order1 <- c("Jabuticabeira II", "Moraes", "Piaçaguera", "Freshwater", "Marine", "C3 Fauna", "C3 Humans", "C4_humans") 
+order1 <- c("Jabuticabeira II", "Moraes", "Piaçaguera","Morro do Ouro", "Freshwater", "Marine", "C3 Fauna", "C3 Humans", "C4_humans") 
 
 ```
 
 
 
-Plot the bulk istope data by species and site. 
+5# Plot the bulk istope data by species and site. 
 
 ```{r}
 #Creates a template for collagen15N against collagen13C
@@ -64,20 +95,7 @@ p <-ggplot()+
   geom_point(data=humans, aes(y=d15N, x=d13C, fill=Site), colour="black", pch=23, size=3) +
   geom_point(data=fauna, aes(y=d15N, x=d13C, fill=category), colour="black", pch=21, size=3) +
   scale_fill_manual(values=c(cols), breaks=c(order))+
-  theme(legend.title=element_text(size=10))+
-  guides(fill=guide_legend(title="Samples"))+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Airial"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.bottom = element_text(margin = margin(b = 2)),
-        axis.title.x.bottom = element_text(margin = margin(t=2, b=5)),
-        axis.text.y.left = element_text(margin = margin(l= 2)),
-        axis.title.y.left = element_text(margin = margin(l=5)),
-        title = element_text(size=12)) +
-  guides(color=FALSE, shape=FALSE)+
+ theme_Pub()+
   coord_fixed(ratio = 1)
 p
 
@@ -88,49 +106,27 @@ p <-ggplot()+
   geom_point(data=humans, aes(y=d34S, x=d13C, fill=Site), colour="black", pch=23, size=3) +
   geom_point(data=fauna, aes(y=d34S, x=d13C, fill=category), colour="black", pch=21, size=3) +
   scale_fill_manual(values=c(cols), breaks=c(order))+
-  theme(legend.title=element_text(size=10))+
-  guides(fill=guide_legend(title="Samples"))+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Airial"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.bottom = element_text(margin = margin(b = 2)),
-        axis.title.x.bottom = element_text(margin = margin(t=2, b=5)),
-        axis.text.y.left = element_text(margin = margin(l= 2)),
-        axis.title.y.left = element_text(margin = margin(l=5)),
-        title = element_text(size=12)) +
-  guides(color=FALSE, shape=FALSE)+
+  theme_Pub()+
   coord_fixed(ratio = 0.6)
 p
 
 
 ```
 
-Quality control check the CSIA data by plotting Pro against Hyp va Pro for each isotope. 
+5# Quality control check the CSIA data by plotting Pro against Hyp va Pro for each isotope. 
 
 ```{r}
-#QC3 Plot 15NPro against 15NHypro 
+#QC1 Plot 15NPro against 15NHypro 
 p <- ggplot(data=data, aes(y=hyp_d15N, x=pro_d15N, fill = Batch))+ 
   labs(x=expression(delta^{15}*N[Pro]*"(\u2030)"), y=expression(delta^{15}*N[Hyp]*"(\u2030)"))+
   scale_x_continuous(position="bottom", limits=c(5,25))+
   scale_y_continuous(position = "left",limits=c(5,25))+
   geom_point(colour="black", pch=21, size=3.5)+
+  geom_errorbar(aes(ymin=hyp_d15N-hyp_d15Nstdev, ymax=hyp_d15N+hyp_d15Nstdev), width=.1)+
+   geom_errorbar(aes(xmin=pro_d15N-pro_d15Nstdev, xmax=pro_d15N+pro_d15Nstdev), width=.1)+
   #geom_smooth(method=lm, se=FALSE)+
   geom_abline(intercept=c(0), slope= 1, linetype="solid")+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Times New Roman"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.top = element_text(margin = margin(b = 8)),
-        axis.title.x.top = element_text(margin = margin(t=8, b=10)),
-        axis.text.y.right = element_text(margin = margin(l= 8)),
-        axis.title.y.right = element_text(margin = margin(l=10)),
-        title = element_text(size=12)) +
-  guides(color=FALSE, shape=FALSE)+
+  theme_Pub()+
   coord_fixed(ratio = 1)
 p
 
@@ -140,25 +136,16 @@ p <- ggplot(data=data, aes(y=hyp_d13C, x=pro_d13C, fill = Batch))+
   scale_x_continuous(position="bottom", limits=c(-24,-7))+
   scale_y_continuous(position = "left",limits=c(-24,-7))+
   geom_point(colour="black", pch=21, size=3.5)+
+  geom_errorbar(aes(ymin=hyp_d13C-hyp_d13C_err, ymax=hyp_d13C+hyp_d13C_err), width=.1)+
+   geom_errorbar(aes(xmin=pro_d13C-pro_d13C_err, xmax=pro_d13C+pro_d13C_err), width=.1)+
   #geom_smooth(method=lm, se=FALSE)+
   geom_abline(intercept=c(0), slope= 1, linetype="solid")+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Times New Roman"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.top = element_text(margin = margin(b = 8)),
-        axis.title.x.top = element_text(margin = margin(t=8, b=10)),
-        axis.text.y.right = element_text(margin = margin(l= 8)),
-        axis.title.y.right = element_text(margin = margin(l=10)),
-        title = element_text(size=12)) +
-  guides(color=FALSE, shape=FALSE)+
+  theme_Pub()+
   coord_fixed(ratio = 1)
 p
 ```
 
-Check quality contol through estimated mass balance against observed bulk values.
+# 5 Check quality contol through estimated mass balance against observed bulk values.
 
 ```{r}
 #QC1 d15N mass balance
@@ -167,20 +154,8 @@ p <- ggplot(data=data, aes(y=d15N_est, x=d15N, fill=common_name))+
   scale_x_continuous(position="bottom", limits=c(5,25))+
   scale_y_continuous(position = "left",limits=c(5,25))+
   geom_point(colour="black", pch=21, size=3.5)+
-  geom_smooth(method=lm, se=FALSE)+
   geom_abline(intercept=c(0), slope= 1, linetype="solid")+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Times New Roman"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.top = element_text(margin = margin(b = 8)),
-        axis.title.x.top = element_text(margin = margin(t=8, b=10)),
-        axis.text.y.right = element_text(margin = margin(l= 8)),
-        axis.title.y.right = element_text(margin = margin(l=10)),
-        title = element_text(size=12)) +
-  guides(color=FALSE, shape=FALSE)+
+  theme_Pub()+
   coord_fixed(ratio = 1)
 p
 
@@ -190,24 +165,13 @@ p <- ggplot(data=data, aes(y=d13C_est, x=d13C, fill=common_name))+
   scale_x_continuous(position="bottom", limits=c(-25,-5))+
   scale_y_continuous(position = "left",limits=c(-25,-5))+
   geom_point(colour="black", pch=21, size=3.5)+
-  geom_smooth(method=lm, se=FALSE)+
+  #geom_smooth(method=lm, se=FALSE)+
   geom_abline(intercept=c(0), slope= 1, linetype="solid")+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Times New Roman"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.top = element_text(margin = margin(b = 8)),
-        axis.title.x.top = element_text(margin = margin(t=8, b=10)),
-        axis.text.y.right = element_text(margin = margin(l= 8)),
-        axis.title.y.right = element_text(margin = margin(l=10)),
-        title = element_text(size=12)) +
-  guides(color=FALSE, shape=FALSE)+
+  theme_Pub()+
   coord_fixed(ratio = 1)
 p
 ```
-Compare d13C stdev against error
+#6 Compare d13C stdev against error
 
 ```{r}
 p <- ggplot(data=data, aes(y=nle_d13C_err, x=nle_d13Cstdev, fill= Batch)) + 
@@ -215,18 +179,7 @@ p <- ggplot(data=data, aes(y=nle_d13C_err, x=nle_d13Cstdev, fill= Batch)) +
   scale_x_continuous(position="bottom", limits=c(-1,1))+
   scale_y_continuous(position = "left",limits=c(-1,1))+
   geom_point(colour="black", pch=21, size=3.5)+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Times New Roman"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.top = element_text(margin = margin(b = 8)),
-        axis.title.x.top = element_text(margin = margin(t=8, b=10)),
-        axis.text.y.right = element_text(margin = margin(l= 8)),
-        axis.title.y.right = element_text(margin = margin(l=10)),
-        title = element_text(size=12)) +
-  guides(color=FALSE, shape=FALSE)+
+  theme_Pub()+
   coord_fixed(ratio = 1)
 p
 ```
@@ -234,7 +187,7 @@ p
 
 
 
-Looks ok - plot d15N Glu against d15N Phe
+#7 d15N Glu against d15N Phe
 
 ```{r}
   p <-ggplot() +
@@ -244,17 +197,6 @@ Looks ok - plot d15N Glu against d15N Phe
   geom_point(data=humans, aes(y=glu_d15N, x=phe_d15N, fill=Site), colour="black", pch=23, size=3)+
   geom_point(data=fauna, aes(y=glu_d15N, x=phe_d15N, fill = category), 
   colour ="black", pch=21, size=3.5)+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Arial"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.top = element_text(margin = margin(b = 8)),
-        axis.title.x.top = element_text(margin = margin(t=8, b=10)),
-        axis.text.y.right = element_text(margin = margin(l= 8)),
-        axis.title.y.right = element_text(margin = margin(l=10)),
-        title = element_text(size=12)) +
   annotate("text", label = "T1", x = 7 , y = 0, size = 3, colour = "black",angle = 25)+
   annotate("text", label = "T2", x = 0 , y = 1.8, size = 3, colour = "black",angle = 25)+
   annotate("text", label = "T3", x = 0 , y = 8, size = 3, colour = "black",angle = 25)+
@@ -262,15 +204,16 @@ Looks ok - plot d15N Glu against d15N Phe
   annotate("text", label = "M3", x = 0 , y = 17.6, size = 3, colour = "Blue",angle = 25)+
   annotate("text", label = "M4", x = 0 , y = 24.0, size = 3, colour = "Blue",angle = 25)+
   scale_fill_manual(values=c(cols), breaks=c(order))+
-  theme(legend.title=element_text(size=10))+
   guides(fill=guide_legend(title="Samples"))+
-  geom_abline(intercept=c(-8.4,-0.8, 6.8, 9.5, 16.1, 22.7), slope= 1, linetype="dashed")+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  geom_abline(intercept=c(-8.4,-0.8, 6.8, 9.5, 16.1, 22.7), slope= 1, linetype="dashed", size=0.2)+
+  theme_Pub()+
 coord_fixed(ratio = 0.5)
 p
 ```
 
 Looks ok - plot d15N Glu against d15N Phe. Let's see the relationship between Glu-Phe and d13C. 
+
+#8 PLot Glu-Phe and d13C.
 
 ```{r}
 #Fig 1d Collagen13C against Glu-Phe
@@ -282,16 +225,7 @@ p <-ggplot() +
   scale_y_continuous(position = "right",limits=c(-5,25))+
   theme_bw()+
    scale_fill_manual(values=c(cols), breaks=c(order))+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(-0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Arial"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.top = element_text(margin = margin(b = 8)),
-        axis.title.x.top = element_text(margin = margin(t=8, b=10)),
-        axis.text.y.right = element_text(margin = margin(l= 8)),
-        axis.title.y.right = element_text(margin = margin(l=10)),
-        title = element_text(size=12))+
+  theme_Pub()+
   coord_fixed(ratio = 0.5)
 p
 ```
@@ -299,7 +233,7 @@ All  individuals  have clear trajectories towards marine. Is there a correlation
 
 
 
-
+#9 PLot Glu-Phe and 34S.
 
 ```{r}
 #Fig 1d Collagen13C against Glu-Phe
@@ -310,43 +244,25 @@ p <-ggplot() +
   scale_x_continuous(position="top", limits=c(-5,20))+
   scale_y_continuous(position = "right",limits=c(-5,25))+
   scale_fill_manual(values=c(cols), breaks=c(order))+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(-0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Arial"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.top = element_text(margin = margin(b = 8)),
-        axis.title.x.top = element_text(margin = margin(t=8, b=10)),
-        axis.text.y.right = element_text(margin = margin(l= 8)),
-        axis.title.y.right = element_text(margin = margin(l=10)),
-        title = element_text(size=12)) 
+  theme_Pub()+
+ coord_fixed(ratio = 0.75)
 p
 ```
-Yes - same story. 
+8# PLot Glu-Phe and 34S for Picaguera
 
 ```{r}
 #Fig 1d Collagen13C against Glu-Phe
 p <-ggplot() +
-  geom_point(data=Piacaguera, aes(y=gluphe_d15N, x=d34S, fill = Site),  colour="black", pch=21, size=3.5)+
+  geom_point(data=(filter(humans, Site == "Piaçaguera") ), aes(y=gluphe_d15N, x=d34S, fill = Site),  colour="black", pch=21, size=3.5)+
   labs(y=expression(Delta^{15}*N[Glu-Phe]*"(\u2030)"), x=expression(delta^{34}*S[collagen]*"(\u2030)"))+
   scale_x_continuous(position="top", limits=c(-5,20))+
   scale_y_continuous(position = "right",limits=c(-5,25))+
   scale_fill_manual(values=c(cols), breaks=c(order))+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(-0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Arial"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.top = element_text(margin = margin(b = 8)),
-        axis.title.x.top = element_text(margin = margin(t=8, b=10)),
-        axis.text.y.right = element_text(margin = margin(l= 8)),
-        axis.title.y.right = element_text(margin = margin(l=10)),
-        title = element_text(size=12)) 
+  theme_Pub()+
+  coord_fixed(ratio = 0.75)
 p
 ```
-
+#10 PLot Glu-Phe and 15S.
 
 ```{r}
 #Fig 1c bis Coll 15N against Glu/Phe
@@ -357,26 +273,14 @@ p <-ggplot() +
   scale_x_continuous(position="top", limits=c(5,20))+
   scale_y_continuous(position = "right",limits=c(-5,25))+
   scale_fill_manual(values=c(cols), breaks=c(order))+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(-0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Arial"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.top = element_text(margin = margin(b = 8)),
-        axis.title.x.top = element_text(margin = margin(t=8, b=10)),
-        axis.text.y.right = element_text(margin = margin(l= 8)),
-        axis.title.y.right = element_text(margin = margin(l=10)),
-        title = element_text(size=12)) +
-  #geom_abline(intercept=0, slope= 1, linetype="dashed")+
-  #guides(color=FALSE, shape=FALSE)+
+  theme_Pub()+
   coord_fixed(ratio = 0.5)
 p
 ```
 
 Interesting that he shark d15N does not track in line with the Glu-Phe. Now let's turn to carbon. A classic plot is Val vs. Phe. 
 
-
+#11. Plot d13C Val vs. Phe
 ```{r}
 #Valvs Phe d13C
 p <- ggplot()+
@@ -386,23 +290,10 @@ p <- ggplot()+
   geom_point(data=humans, aes(y=phe_d13C, x=val_d13C, fill = Site), colour="black", pch=21, size=3.5)+
   geom_point(data=fauna, aes(y=phe_d13C, x=val_d13C,fill=category), colour="black", pch=23, size=3)+
   geom_abline(intercept=c(0), slope= 1, linetype="dashed")+
-   scale_fill_manual(values=c(cols1), breaks=c(order1))+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Arial"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.top = element_text(margin = margin(b = 8)),
-        axis.title.x.top = element_text(margin = margin(t=8, b=10)),
-        axis.text.y.right = element_text(margin = margin(l= 8)),
-        axis.title.y.right = element_text(margin = margin(l=10)),
-        title = element_text(size=12)) +
+   scale_fill_manual(values=c(cols), breaks=c(order))+
+  theme_Pub()+
   #guides(color=FALSE, shape=FALSE)+
-  coord_fixed(ratio = 1)+
-  scale_fill_manual(values=cbPalette)+
-  theme(legend.title=element_text(size=10))+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+  coord_fixed(ratio = 1)
 p
 
 ```
@@ -411,6 +302,7 @@ p
 
 Above it is intersting tht some of the Piacaguera samples have high d13C Phe but not Val-Phe offses, -could this be C4. Compare with control groups? Plot against references. 
 
+#11. Plot d13C Val vs. Phe against refs
 
 ```{r}
 #Valvs Phe d13C
@@ -418,25 +310,14 @@ p <- ggplot()+
   labs(x=expression(delta^{13}*C[Val]*"(\u2030)"), y=expression(delta^{13}*C[Phe]*"(\u2030)"))+
   scale_x_continuous(position="bottom", limits=c(-40,-10))+
   scale_y_continuous(position = "left",limits=c(-40, -10))+
-  #geom_point(data=humans, aes(y=phe_d13C, x=val_d13C, fill = Site), colour="black", pch=23, size=3.5)+
+  geom_point(data=humans, aes(y=phe_d13C, x=val_d13C, fill = Site), colour="black", pch=23, size=3.5)+
   geom_point(data=control, aes(y=phe_d13C, x=val_d13C,fill=Diet), colour="black", pch=21, size=3)+
+  #geom_point(data=fauna, aes(y=phe_d13C, x=val_d13C,fill=category), colour="black", pch=23, size=3)+
   geom_abline(intercept=c(0), slope= 1, linetype="dashed")+
   scale_fill_manual(values=c(cols1), breaks=c(order1))+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Arial"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.top = element_text(margin = margin(b = 8)),
-        axis.title.x.top = element_text(margin = margin(t=8, b=10)),
-        axis.text.y.right = element_text(margin = margin(l= 8)),
-        axis.title.y.right = element_text(margin = margin(l=10)),
-        title = element_text(size=12)) +
+  theme_Pub()+
   #guides(color=FALSE, shape=FALSE)+
-  coord_fixed(ratio = 1)+
-  theme(legend.title=element_text(size=10))+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+  coord_fixed(ratio = 1)
 p
 
 ```
@@ -445,7 +326,7 @@ p
 
 
 Some of tyhe Pcaguera samples plot towards the C4 humans. Try Val-Phe vs Lys-Phe
-
+#12. Val-Phe vs Lys-Phe
 ```{r}
 p <- ggplot()+
   labs(x=expression(Delta^{13}*C[Lys-Phe]*"(\u2030)"), y=expression(Delta^{13}*C[Val-Phe]*"(\u2030)"))+
@@ -455,25 +336,13 @@ p <- ggplot()+
   geom_point(data=control, aes(y=valphe_d13C, x=lysphe_d13C,fill=Diet), colour="black", pch=23, size=3)+
   geom_abline(intercept=c(0), slope= 1, linetype="dashed")+
    scale_fill_manual(values=c(cols1), breaks=c(order1))+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Times New Roman"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.top = element_text(margin = margin(b = 8)),
-        axis.title.x.top = element_text(margin = margin(t=8, b=10)),
-        axis.text.y.right = element_text(margin = margin(l= 8)),
-        axis.title.y.right = element_text(margin = margin(l=10)),
-        title = element_text(size=12)) +
-  coord_fixed(ratio = 1)+
-  theme(legend.title=element_text(size=10))+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+  theme_Pub()+
+  coord_fixed(ratio = 1)
 p
 ```
 
 
-
+#13 Gly vs. Phe after Corr et al. 
 
 ```{r}
 
@@ -482,102 +351,60 @@ p <- ggplot()+
   labs(x=expression(delta^{13}*C[Phe]*"(\u2030)"), y=expression(delta^{13}*C[Gly]*"(\u2030)"))+
   scale_x_continuous(position="bottom", limits=c(-40,-10))+
   scale_y_continuous(position = "left",limits=c(-20, 0))+
-  geom_point(data=fauna, aes(y=gly_d13C, x=phe_d13C,fill=common_name), colour="black", pch=23, size=3)+
   geom_point(data=humans, aes(y=gly_d13C, x=phe_d13C, fill = Site), colour="black", pch=21, size=3.5)+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Times New Roman"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.top = element_text(margin = margin(b = 8)),
-        axis.title.x.top = element_text(margin = margin(t=8, b=10)),
-        axis.text.y.right = element_text(margin = margin(l= 8)),
-        axis.title.y.right = element_text(margin = margin(l=10)),
-        title = element_text(size=12)) +
-  #guides(color=FALSE, shape=FALSE)+
-  coord_fixed(ratio = 1)+
-  scale_fill_manual(values=cbPalette)+
-  theme(legend.title=element_text(size=10))+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+  geom_point(data=fauna, aes(y=gly_d13C, x=phe_d13C,fill=category), colour="black", pch=23, size=3)+
+    scale_fill_manual(values=c(cols), breaks=c(order))+
+  theme_Pub()+
+  coord_fixed(ratio = 1)
 p
 
 ```
 
-How about plotting d15NGlu_Phe against d13CVal-Phe. 
+#14 d15NGlu_Phe against d13CVal-Phe. 
 
 ```{r}
 #Fig 1d Collagen13C against Glu-Phe
 p <-ggplot() +
   geom_point(data=humans, aes(y=gluphe_d15N, x=valphe_d13C, fill = Site),  colour="black", pch=21, size=3.5)+
-  geom_point(data=fauna, aes(y=gluphe_d15N,  x=valphe_d13C, fill=common_name), colour="black", pch=23, size=3)+
+  geom_point(data=fauna, aes(y=gluphe_d15N,  x=valphe_d13C, fill=category), colour="black", pch=23, size=3)+
   labs(y=expression(Delta^{15}*N[Glu-Phe]*"(\u2030)"), x=expression(Delta^{13}*C[Val-Phe]*"(\u2030)"))+
+   scale_fill_manual(values=c(cols), breaks=c(order))+
   scale_x_continuous(position="top", limits=c(-5,10))+
   scale_y_continuous(position = "right",limits=c(-5,30))+
   theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(-0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Times New Roman"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.top = element_text(margin = margin(b = 8)),
-        axis.title.x.top = element_text(margin = margin(t=8, b=10)),
-        axis.text.y.right = element_text(margin = margin(l= 8)),
-        axis.title.y.right = element_text(margin = margin(l=10)),
-        title = element_text(size=12)) 
+  coord_fixed(ratio = 0.5)
 p
 ```
-
+# GluPhe and GlyPhe
 ```{r}
 #Fig 1d Collagen13C against Glu-Phe
 p <-ggplot() +
   geom_point(data=humans, aes(y=gluphe_d15N, x=glyphe_d13C, fill = Site),  colour="black", pch=21, size=3.5)+
-  geom_point(data=fauna, aes(y=gluphe_d15N,  x=glyphe_d13C, fill=common_name), colour="black", pch=23, size=3)+
+  geom_point(data=fauna, aes(y=gluphe_d15N,  x=glyphe_d13C, fill=category), colour="black", pch=23, size=3)+
   labs(y=expression(Delta^{15}*N[Glu-Phe]*"(\u2030)"), x=expression(Delta^{13}*C[Gly-Phe]*"(\u2030)"))+
+  scale_fill_manual(values=c(cols), breaks=c(order))+
   scale_x_continuous(position="top", limits=c(0,30))+
   scale_y_continuous(position = "right",limits=c(-5,30))+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(-0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Times New Roman"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.top = element_text(margin = margin(b = 8)),
-        axis.title.x.top = element_text(margin = margin(t=8, b=10)),
-        axis.text.y.right = element_text(margin = margin(l= 8)),
-        axis.title.y.right = element_text(margin = margin(l=10)),
-        title = element_text(size=12)) 
+  theme_Pub()
 p
 ```
 
 
-
-
-Plot Val-Phe vs. d34S
+#Plot Val-Phe vs. d34S
 
 
 ```{r}
 p <-ggplot() +
   geom_point(data=humans, aes(y=d34S, x=valphe_d13C, fill = Site),  colour="black", pch=21, size=3.5)+
-  geom_point(data=fauna, aes(y=d34S,  x=valphe_d13C, fill=common_name), colour="black", pch=23, size=3)+
+  geom_point(data=fauna, aes(y=d34S,  x=valphe_d13C, fill=category), colour="black", pch=23, size=3)+
   labs(y=expression(Delta^{34}*S*"(\u2030)"), x=expression(Delta^{13}*C[Val-Phe]*"(\u2030)"))+
+  scale_fill_manual(values=c(cols), breaks=c(order))+
   scale_x_continuous(position="top", limits=c(-5,10))+
   scale_y_continuous(position = "right",limits=c(-5,20))+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  theme(axis.ticks.length=unit(-0.2,"cm"))+
-  theme(plot.title=element_text(hjust=0.5, family = "Times New Roman"))+
-  theme(axis.text=element_text(size=12),
-        axis.title = element_text(size=12),
-        axis.text.x.top = element_text(margin = margin(b = 8)),
-        axis.title.x.top = element_text(margin = margin(t=8, b=10)),
-        axis.text.y.right = element_text(margin = margin(l= 8)),
-        axis.title.y.right = element_text(margin = margin(l=10)),
-        title = element_text(size=12)) 
+  theme_Pub()
 p
 
 ```
-
 
 
 
@@ -893,24 +720,3 @@ ggplot(data=PCAvalues, aes(x = PC1, y = PC2))+
 
 
 
-
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
